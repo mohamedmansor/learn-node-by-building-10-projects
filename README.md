@@ -30,3 +30,6 @@ Project 12: Album Organizer
 Join us and be have the first mover advantage in this amazing emerging technology and learn to build the next generation apps.
 
 Course link https://www.udemy.com/learn-nodejs-by-building-10-projects/
+
+# Note
+*I replaced template engine from `jade` to `ejs`*
