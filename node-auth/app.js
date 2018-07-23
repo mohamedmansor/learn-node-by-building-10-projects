@@ -1,22 +1,22 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-
-// imports
-// session, passport, localStratgy, bodyParser, muler, flash , mongo, mongoose, db
+var favicon = require('serve-favicon');
+var expressValidator = require('express-validator');
 var session = require('express-session');
 var passport = require('passport');
-var localStratgy = require('passport-local');
+var LocalStrategy = require('passport-local').Strategy;
 var bodyParser = require('body-parser');
-var multer = require('multer')
-var expressValidator = require('express-validator');
+var multer = require('multer');
 var flash = require('connect-flash');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
-
 var db = mongoose.connection;
+
+var multer = require('multer')
+
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -25,58 +25,63 @@ var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'ejs');
+
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// MIDDLEWARE
-// handle file upload
-app.use(multer({ dest: __dirname + '/uploads/' }).any());
+// Handle file uploads
+// app.use(multer({ dest: './uploads' }));
 
-// handle express sessions
+// Handle Express sessions
 app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
+  secret: 'secret',
   saveUninitialized: true,
-  cookie: { secure: true }
-}))
+  resave: true
+}));
 
-// passport
+// Passport
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(express.json());
 
-// validator
+// Validator
 app.use(expressValidator({
-  errorFormatter: function (param, msg, value) {
+  errorFormatter: function(param, msg, value) {
     var namespace = param.split('.'),
-      root = namespace.shift(),
-      formParam = root;
+        root = namespace.shift(),
+        formParam = root;
 
-    while (namespace.length) {
-      formParam += '[' + namespace.shift() + ']'
+    while(namespace.length) {
+      formParam += '[' + namespace.shift() + ']';
     }
+
     return {
-      param: formParam,
-      msg: msg,
-      value: value
-    }
+      param : formParam,
+      msg   : msg,
+      value : value
+    };
   }
 }));
 
 
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// handle send message to template
 app.use(flash());
-
 app.use(function (req, res, next) {
   res.locals.messages = require('express-messages')(req, res);
   next();
 });
 
+app.get('*', function (req, res, next) {
+  res.locals.user = req.user || null;
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
