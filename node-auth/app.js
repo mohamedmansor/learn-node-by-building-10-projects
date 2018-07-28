@@ -47,23 +47,24 @@ app.use(session({
 // Passport
 app.use(passport.initialize());
 app.use(passport.session());
+
 app.use(express.json());
 
 // Validator
 app.use(expressValidator({
-  errorFormatter: function(param, msg, value) {
+  errorFormatter: function (param, msg, value) {
     var namespace = param.split('.'),
-        root = namespace.shift(),
-        formParam = root;
+      root = namespace.shift(),
+      formParam = root;
 
-    while(namespace.length) {
+    while (namespace.length) {
       formParam += '[' + namespace.shift() + ']';
     }
 
     return {
-      param : formParam,
-      msg   : msg,
-      value : value
+      param: formParam,
+      msg: msg,
+      value: value
     };
   }
 }));
@@ -83,6 +84,9 @@ app.get('*', function (req, res, next) {
   next();
 });
 
+app.route('*', function (req, res) {
+  res.locals.user = req.user || null
+});
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
